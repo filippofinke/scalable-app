@@ -15,14 +15,16 @@ services:
    environment:
      - SERVICE_PORTS=8080
    deploy:
-     replicas: 4
+     resources:
+      limits:
+        memory: 300m
+     replicas: 6
      update_config:
-       parallelism: 2
-       delay: 5s
+       parallelism: 3
      restart_policy:
        condition: on-failure
-       max_attempts: 3
-       window: 120s
+       max_attempts: 1
+       window: 20s
    networks:
      - backendweb
    depends_on:
@@ -33,14 +35,17 @@ services:
    environment:
      - SERVICE_PORTS=80
    deploy:
+     resources:
+      limits:
+        memory: 50m
      replicas: 2
      update_config:
        parallelism: 1
        delay: 5s
      restart_policy:
        condition: on-failure
-       max_attempts: 3
-       window: 120s
+       max_attempts: 1
+       window: 20s
    networks:
      - frontendweb
    depends_on:
