@@ -1,0 +1,80 @@
+version: '3'
+
+services:
+
+  redis:
+    image: redis
+    hostname: redis
+    networks:
+      - backendweb
+    volumes:
+      - /redis:/data
+  backend:
+   image: backend
+   environment:
+     - SERVICE_PORTS=8080
+   deploy:
+     replicas: 4
+     update_config:
+       parallelism: 2
+       delay: 5s
+     restart_policy:
+       condition: on-failure
+       max_attempts: 3
+       window: 120s
+   networks:
+     - backendweb
+
+  frontend:
+   image: frontend
+   environment:
+     - SERVICE_PORTS=80
+   deploy:
+     replicas: 2
+     update_config:
+       parallelism: 1
+       delay: 5s
+     restart_policy:
+       condition: on-failure
+       max_attempts: 3
+       window: 120s
+   networks:
+     - frontendweb
+
+  proxyfrontend:
+    image: dockercloud/haproxy
+    depends_on:
+      - frontend
+    environment:
+      - BALANCE=leastconn
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 80:80
+    networks:
+      - frontendweb
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  proxybackend:
+    image: dockercloud/haproxy
+    depends_on:
+      - backend
+    environment:
+      - BALANCE=leastconn
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8080:80
+    networks:
+      - backendweb
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  backendweb:
+    driver: overlay
+  frontendweb:
+    driver: overlay
