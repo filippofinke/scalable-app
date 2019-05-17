@@ -7,8 +7,6 @@ services:
     hostname: redis
     networks:
       - backendweb
-    volumes:
-      - /redis:/data
   backend:
    image: backend
    environment:
