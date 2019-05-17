@@ -2,11 +2,14 @@ version: '3'
 
 services:
 
-  redis:
-    image: redis
-    hostname: redis
+  mongo:
+    image: mongo
+    hostname: mongo
+    volumes:
+      - ./mongodb:/data/db
     networks:
       - backendweb
+
   backend:
    image: backend
    environment:
@@ -22,6 +25,8 @@ services:
        window: 120s
    networks:
      - backendweb
+   depends_on:
+     - mongo
 
   frontend:
    image: frontend
@@ -38,6 +43,9 @@ services:
        window: 120s
    networks:
      - frontendweb
+   depends_on:
+     - mongo
+     - backend
 
   proxyfrontend:
     image: dockercloud/haproxy

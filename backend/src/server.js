@@ -1,47 +1,86 @@
 /**
-* @author Filippo Finke
-*/
-var redis = require('redis');
+ * @author Filippo Finke
+ */
+const MONGODB = "mongodb://mongo:27017/";
+const DB_NAME = "app";
+const PORT = 1337;
+
 var http = require('http');
 var os = require('os');
-var client = redis.createClient(6379, "redis");
-var connected = false;
+var mongodb = require('mongodb')
+var db;
+var message = "";
 
-http.createServer(function (req, res) {
-	res.writeHead(200, {"Access-Control-Allow-Origin": "*"});
-	var message = os.hostname();
-	if(connected) {
-		message += " REDIS OK! Visits: ";
-	} else {
-		message += " REDIS OFFLINE!";
-	}
-	var visits = 0;
-	if(connected)
-	{
-		client.incr('visits', function(err, reply) {
-		    if(reply == null)
-		    {
-		    	client.set('visits', "1", function(err, reply) {
-			    });
-			    reply = 1;
-		    }
-		    console.log(reply);
-		    message += reply;
-		    res.end(message);
-		});
-	}
-	else
-	{
-    	res.end(message);
-	}
+function connect() {
+  var mongo = mongodb.MongoClient;
+  mongo.connect(MONGODB + DB_NAME, {
+    useNewUrlParser: true,
+    reconnectTries: 5,
+    reconnectInterval: 50,
+  }, function(err, database) {
+    if (err) {
+      message = "Error connecting to the mongodb server! " + err;
+      console.log("Error connecting to the mongodb server!");
+    }
+    else
+    {
+      db = database.db(DB_NAME);
+    }
+  });
+}
+connect();
+
+http.createServer(async function(req, res) {
+  res.writeHead(200, {
+    "Access-Control-Allow-Origin": "*"
+  });
+  if (typeof db !== "undefined") {
+    var object = {
+      ip: req.connection.remoteAddress,
+      url: req.url,
+      timestamp: Math.floor(new Date() / 1000)
+    };
+    await insert(object).then(async function(result) {
+      await getRequests().then(function(result) {
+        var count = result.length;
+        message = "Requests: " + count;
+      }, function(err) {
+        message = "Error getting requests! " + err;
+        connect();
+      });
+    }, function(err) {
+      message = "Error inserting request! " + err;
+      connect();
+    });
+  }
+  else
+  {
+    connect();
+  }
+
+  var response = {
+    hostname: os.hostname(),
+    message: message
+  };
+  res.end(JSON.stringify(response));
+
 }).listen(8080);
 
-client.on('connect', function() {
-    console.log('Redis client connected');
-    connected = true;
-});
 
-client.on('error', function (err) {
-    console.log('Something went wrong ' + err);
-    connected = true;
-});
+async function getRequests() {
+  return new Promise(function(resolve, reject) {
+    db.collection("requests").find({}).toArray(function(err, result) {
+      if (err) reject(err);
+      resolve(result);
+    });
+  });
+}
+
+async function insert(object) {
+  return new Promise(function(resolve, reject) {
+    db.collection("requests").insertOne(object, function(err, res) {
+      if (err) reject(err);
+      resolve(res);
+    });
+  });
+}

@@ -10,6 +10,6 @@
   "author": "Filippo Finke",
   "license": "ISC",
   "dependencies": {
-    "redis": "^2.8.0"
+    "mongodb": "^3.2.4"
   }
 }

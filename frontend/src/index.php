@@ -9,6 +9,7 @@
 	<hr>
 	<h2>Frontend ID: <b><?php echo gethostname(); ?></b></h2>
 	<h2>Backend ID: <b id="container">loading...</b></h2>
+	<h3 id="message">Loading...</h3>
 	<script type="text/javascript">
 		window.onload = function() {
 			console.log("Window loaded!");
@@ -16,7 +17,9 @@
 
 		    xmlHttp.onreadystatechange = function() {
 		        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-		            document.getElementById("container").innerHTML = xmlHttp.responseText;
+								var object = JSON.parse(xmlHttp.responseText);
+		            document.getElementById("container").innerHTML = object.hostname;
+								document.getElementById("message").innerHTML = object.message;
 		    }
 		    xmlHttp.open("GET", "http://127.0.0.1:8080", true);
 		    xmlHttp.send(null);
