@@ -2,13 +2,25 @@ version: '3'
 
 services:
 
-  mongo:
-    image: mongo
-    hostname: mongo
+  mongo1:
+    image: mongo-master
+    hostname: mongo1
     volumes:
-      - ./mongodb:/data/db
+      - ./mongo1:/data/db
     networks:
       - backendweb
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+
+  mongo2:
+    image: mongo
+    hostname: mongo2
+    volumes:
+      - ./mongo2:/data/db
+    networks:
+      - backendweb
+    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+    depends_on:
+      - mongo1
 
   backend:
    image: backend
@@ -49,7 +61,6 @@ services:
    networks:
      - frontendweb
    depends_on:
-     - mongo
      - backend
 
   proxyfrontend:
@@ -83,6 +94,13 @@ services:
     deploy:
       placement:
         constraints: [node.role == manager]
+
+  portainer:
+    image: portainer/portainer
+    ports:
+      - 9000:9000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
   backendweb:

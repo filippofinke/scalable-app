@@ -1,8 +1,8 @@
 /**
  * @author Filippo Finke
  */
-const MONGODB = "mongodb://mongo:27017/";
 const DB_NAME = "app";
+const MONGODB = "mongodb://mongo1:27017,mongo2:27018/" + DB_NAME + "?replicaSet=rs0";
 const PORT = 1337;
 
 var http = require('http');
@@ -13,7 +13,7 @@ var message = "";
 
 function connect() {
   var mongo = mongodb.MongoClient;
-  mongo.connect(MONGODB + DB_NAME, {
+  mongo.connect(MONGODB, {
     useNewUrlParser: true,
     reconnectTries: 5,
     reconnectInterval: 50,
