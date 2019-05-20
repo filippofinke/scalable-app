@@ -2,7 +2,7 @@
 
 Scalable app for learn how to use docker.
 
-## how to start
+## how to start
 
 To start this project:
 
