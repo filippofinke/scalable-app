@@ -5,7 +5,7 @@
 	<title>Simple app</title>
 </head>
 <body>
-	<h1>Simple app - Test </h1>
+	<h1>Simple app - Test <h1>
 	<hr>
 	<h2>Frontend ID: <b><?php echo gethostname(); ?></b></h2>
 	<h2>Backend ID: <b id="container">loading...</b></h2>

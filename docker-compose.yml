@@ -1,7 +1,6 @@
-version: '3'
+version: "3"
 
 services:
-
   mongo1:
     image: mongo-master
     hostname: mongo1
@@ -9,7 +8,7 @@ services:
       - ./mongo1:/data/db
     networks:
       - backendweb
-    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+    entrypoint: ["/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0"]
 
   mongo2:
     image: mongo
@@ -18,50 +17,50 @@ services:
       - ./mongo2:/data/db
     networks:
       - backendweb
-    entrypoint: [ "/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0" ]
+    entrypoint: ["/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0"]
     depends_on:
       - mongo1
 
   backend:
-   image: backend
-   environment:
-     - SERVICE_PORTS=8080
-   deploy:
-     resources:
-      limits:
-        memory: 300m
-     replicas: 6
-     update_config:
-       parallelism: 3
-     restart_policy:
-       condition: on-failure
-       max_attempts: 1
-       window: 20s
-   networks:
-     - backendweb
-   depends_on:
-     - mongo
+    image: backend
+    environment:
+      - SERVICE_PORTS=8080
+    deploy:
+      resources:
+        limits:
+          memory: 300m
+      replicas: 6
+      update_config:
+        parallelism: 3
+      restart_policy:
+        condition: on-failure
+        max_attempts: 1
+        window: 20s
+    networks:
+      - backendweb
+    depends_on:
+      - mongo
 
   frontend:
-   image: frontend
-   environment:
-     - SERVICE_PORTS=80
-   deploy:
-     resources:
-      limits:
-        memory: 50m
-     replicas: 2
-     update_config:
-       parallelism: 1
-       delay: 5s
-     restart_policy:
-       condition: on-failure
-       max_attempts: 1
-       window: 20s
-   networks:
-     - frontendweb
-   depends_on:
-     - backend
+    image: frontend
+    environment:
+      - SERVICE_PORTS=80
+    deploy:
+      resources:
+        limits:
+          memory: 50m
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 1
+        window: 20s
+    networks:
+      - frontendweb
+    depends_on:
+      - backend
 
   proxyfrontend:
     image: dockercloud/haproxy
