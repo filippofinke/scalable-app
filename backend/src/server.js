@@ -11,15 +11,24 @@ var os = require("os");
 var mongodb = require("mongodb");
 var db;
 var message = "";
+var mongo = mongodb.MongoClient;
+var connected = false;
+
+setInterval(function() {
+  if(typeof db === "undefined" || db.serverConfig.isConnected() === false)
+  {
+    connected = false;
+    console.log("Trying to connect to the server...");
+    connect();
+  }
+},500);
 
 function connect() {
-  var mongo = mongodb.MongoClient;
   mongo.connect(
     MONGODB,
     {
       useNewUrlParser: true,
-      reconnectTries: 5,
-      reconnectInterval: 50
+      reconnectTries: 0
     },
     function(err, database) {
       if (err) {
@@ -27,18 +36,20 @@ function connect() {
         console.log("Error connecting to the mongodb server!");
       } else {
         db = database.db(DB_NAME);
+        console.log("Connected to the server!");
+        connected = true;
       }
     }
   );
 }
-connect();
+
 
 http
   .createServer(async function(req, res) {
     res.writeHead(200, {
       "Access-Control-Allow-Origin": "*"
     });
-    if (typeof db !== "undefined") {
+    if (typeof db !== "undefined" && connected) {
       var object = {
         ip: req.connection.remoteAddress,
         url: req.url,
@@ -53,17 +64,15 @@ http
             },
             function(err) {
               message = "Error getting requests! " + err;
-              connect();
             }
           );
         },
         function(err) {
           message = "Error inserting request! " + err;
-          connect();
         }
       );
     } else {
-      connect();
+      message = "Backend offline!";
     }
 
     var response = {
