@@ -1,6 +1,9 @@
 #!/bin/bash
 # @author Filippo Finke
 
+mkdir -p mongo1
+mkdir -p mongo2
+
 for dir in `ls -d */`
 do
     echo $dir
