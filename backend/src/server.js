@@ -15,13 +15,12 @@ var mongo = mongodb.MongoClient;
 var connected = false;
 
 setInterval(function() {
-  if(typeof db === "undefined" || db.serverConfig.isConnected() === false)
-  {
+  if (typeof db === "undefined" || db.serverConfig.isConnected() === false) {
     connected = false;
     console.log("Trying to connect to the server...");
     connect();
   }
-},500);
+}, 500);
 
 function connect() {
   mongo.connect(
@@ -42,7 +41,6 @@ function connect() {
     }
   );
 }
-
 
 http
   .createServer(async function(req, res) {
